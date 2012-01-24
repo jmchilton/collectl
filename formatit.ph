@@ -2038,6 +2038,7 @@ sub dataAnalyze
     elsif ($data=~/^VmPTE:\s+(\d+)/)    { $procVmPTE[$i]=$1; }
     elsif ($data=~/^VmSwap:\s+(\d+)/)   { $procVmSwap[$i]=$1; }
     elsif ($data=~/^Tgid:\s+(\d+)/)     { $procTgid[$i]=$1; }
+    elsif ($data=~/^exe (.*)/)          { $procExe[$i]=$1; }
     elsif ($data=~/^Uid:\s+(\d+)/)
     { 
       $uid=$1;
@@ -8237,7 +8238,7 @@ sub printPlotProc
     $procHeaders.="VmLck${SEP}VmRSS${SEP}VmData${SEP}VmStk${SEP}VmExe${SEP}VmLib${SEP}";
     $procHeaders.="CPU${SEP}SysT${SEP}UsrT${SEP}PCT${SEP}AccumT${SEP}";
     $procHeaders.="RKB${SEP}WKB${SEP}RKBC${SEP}WKBC${SEP}RSYS${SEP}WSYS${SEP}CNCL${SEP}";
-    $procHeaders.="MajF${SEP}MinF${SEP}Command\n";
+    $procHeaders.="MajF${SEP}MinF${SEP}Executable${SEP}Command\n";
     $headersPrintedProc=1;
   }
 
@@ -8264,7 +8265,7 @@ sub printPlotProc
     $datetime.=".$usecs"    if $options=~/m/;
 
     # Username comes from translation hash OR we just print the UID
-    $procPlot.=sprintf("%s${SEP}%d${SEP}%s${SEP}%s${SEP}%s${SEP}%d${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%d${SEP}%s${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%s${SEP}%s${SEP}%s",
+    $procPlot.=sprintf("%s${SEP}%d${SEP}%s${SEP}%s${SEP}%s${SEP}%d${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%s${SEP}%d${SEP}%s${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%d${SEP}%s${SEP}%s${SEP}%s${SEP}%s",
           $datetime, $procPid[$i], $procUser[$i],  $procPri[$i], 
 	  $procPpid[$i],  $procThread[%i], $procState[$i],  
 	  defined($procVmSize[$i]) ? $procVmSize[$i] : 0, 
@@ -8286,6 +8287,7 @@ sub printPlotProc
 	  defined($procWSys[$i])   ? $procWSys[$i]/$interval2Secs : 0,
 	  defined($procCKB[$i])    ? $procCKB[$i]/$interval2Secs  : 0,
 	  cvt($majFlt), cvt($minFlt),
+	  defined($procExe[$i])    ? $procExe[$i] : $procName[$i],
 	  defined($procCmd[$i])    ? $procCmd[$i] : $procName[$i]);
 
     # This is a little messy (sorry about that).  The way writeData works is that
