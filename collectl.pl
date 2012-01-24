@@ -2802,6 +2802,8 @@ for (; $count!=0 && !$doneFlag; $count--)
 	      if $pidSeen{$pid}==1;
 	  $pidSeen{$pid}=getProc(17, "/proc/$taskio/$pid/io", "proc:$pid io")
 	      if $pidSeen{$pid}==1 && $processIOFlag;
+    $pidSeen{$pid}=getProc(18, "/proc/$task/$pid/exe", "proc:$pid exe", undef, 1)
+        if $pidSeen{$pid}==1;
 	  findThreads($pid)     if $allThreadFlag || ($oneThreadFlag && $procOpts!~/p/ && $pidThreads{$pid});
         }
       }
@@ -2827,6 +2829,8 @@ for (; $count!=0 && !$doneFlag; $count--)
 	      if $pidSeen{$pid}==1;
 	  $pidSeen{$pid}=getProc(17, "/proc/$taskio/$pid/io", "proc:$pid io")
 	      if $pidSeen{$pid}==1 && $processIOFlag;
+    $pidSeen{$pid}=getProc(18, "/proc/$task/$pid/exe", "proc:$pid exe", undef, 1)
+        if $pidSeen{$pid}==1;
 	  findThreads($pid)     if $allThreadFlag || ($oneThreadFlag && $procOpts!~/p/ && $pidThreads{$pid});
         }
       }
@@ -3507,6 +3511,14 @@ sub getProc
 
   # matches one or 2 consective //s for pids because when no threads there are 2 of them
   logdiag("$proc")   if ($utimeMask & 2) && ($proc!~/^\/proc\/?\/\d/) || ($utimeMask & 4) && ($proc=~/^\/proc\/?\/\d/);
+
+  if ($type==18)
+  {
+    $line=readlink($proc);
+    record(2, "$tag $line\n", undef, 1);
+    return(1);
+  }
+
 
   if (!open PROC, "<$proc")
   {
