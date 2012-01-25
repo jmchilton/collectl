@@ -10,7 +10,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
 %description
-A fork of collectl taylored for MSI.
+A fork of collectl tailored for MSI.
 
 %install
 DESTDIR=$RPM_BUILD_ROOT
