@@ -8,18 +8,30 @@ URL: https://github.com/jmchilton/collectl
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
+%if %{_for_os} == "fedora"
+Requires: dmidecode
+%endif
 
 %description
 A fork of collectl tailored for MSI.
 
 %install
+
+
 DESTDIR=$RPM_BUILD_ROOT
 BINDIR=$DESTDIR/usr/bin
 DOCDIR=$DESTDIR/usr/share/doc/collectl
 SHRDIR=$DESTDIR/usr/share/collectl
 MANDIR=$DESTDIR/usr/share/man/man1
 ETCDIR=$DESTDIR/etc
-INITDIR=$ETCDIR/init.d
+%if %{_for_os} == "fedora"
+INITPATH=/etc/rc.d/init.d
+INITFILE=collectl
+%elseif %{_for_os} == "suse"
+INITPATH=/etc/init.d
+INITFILE=collectl-suse
+%endif
+INITDIR=$DESTDIR/$INITPATH
 
 %{__mkdir} -p $BINDIR
 %{__mkdir} -p $DOCDIR
@@ -33,7 +45,6 @@ INITDIR=$ETCDIR/init.d
 %{__cp} collectl.pl           $BINDIR/collectl
 %{__cp} collectl.conf         $ETCDIR
 %{__cp} man1/*                $MANDIR
-%{__cp} initd/*               $INITDIR
 
 %{__cp} docs/*                $DOCDIR
 %{__cp} GPL ARTISTIC COPYING  $DOCDIR
@@ -48,6 +59,8 @@ INITDIR=$ETCDIR/init.d
 %{__cp} client.pl readS       $SHRDIR/util
 %{__cp} col2tlviz.pl          $SHRDIR/util
 
+
+
 gzip -f $MANDIR/collectl*
 
 # remove any stale versions in case the names/numbers used have changed.
@@ -57,45 +70,11 @@ if [ -x /bin/rm ] ; then
   /bin/rm -f $ETCDIR/rc.d/rc*.d/*collectl
 fi
 
-# Try and decide which distro this is based on distro specific files.
-distro=1
-if [ -f /sbin/yast ]; then
-    distro=2
-    mv -f $INITDIR/collectl-suse $INITDIR/collectl
-    rm -f $INITDIR/collectl-debian
-    rm -f $INITDIR/collectl-generic
-fi
+#%{__rm} -f $INITDIR/collectl-suse
+#%{__rm} -f $INITDIR/collectl-debian
+#%{__rm} -f $INITDIR/collectl-generic
 
-# debian
-if [ -f /usr/sbin/update-rc.d ]; then
-    distro=3
-    mv -f $INITDIR/collectl-debian $INITDIR/collectl
-    rm -f $INITDIR/collectl-suse
-    rm -f $INITDIR/collectl-generic
-
-    # only if we're installing under /
-    [ "$DESTDIR" = "/" ] && update-rc.d collectl defaults
-fi
-
-# redhat
-if [ -f /etc/redhat-release ]; then
-    distro=4
-    rm -f $INITDIR/collectl-suse
-    rm -f $INITDIR/collectl-debian
-    rm -f $INITDIR/collectl-generic
-    [ "$DESTDIR" = "/" ] && chkconfig --add collectl
-fi
-
-# gentoo
-if [ -f $ETCDIR/gentoo-release ]; then
-    distro=5
-    mv -f $INITDIR/collectl-generic $INITDIR/collectl
-    rm -f $INITDIR/collectl-suse
-    rm -f $INITDIR/collectl-debian
-    [ "$DESTDIR" = "/" ] && rc-update -a collectl default
-fi
-
-
+install -m 755 initd/$INITFILE $INITDIR/collectl
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -105,7 +84,12 @@ fi
 /*/*
 
 %config /etc/collectl.conf
-%attr(0755, root, root) /etc/init.d/collectl*
+
+%if %{_for_os} == "fedora"
+%attr(0755, root, root) /etc/rc.d/init.d/collectl
+%elseif %{_for_os} == "suse"
+%attr(0755, root, root) /etc/init.d/collectl
+%endif
 %attr(0444, root, root) /etc/collectl.conf
 %attr(0755, root, root) /usr/bin/collectl
 %attr(0444, root, root) /usr/share/doc/collectl/*
@@ -117,3 +101,28 @@ fi
 %pre
 
 %post
+if [ -x /usr/lib/lsb/install_initd ]; then
+  /usr/lib/lsb/install_initd /etc/init.d/collectl
+elif [ -x /sbin/chkconfig ]; then
+  /sbin/chkconfig --add collectl
+else
+   for i in 2 3 4 5; do
+        ln -sf /etc/init.d/collectl /etc/rc.d/rc${i}.d/S11collectl
+   done
+   for i in 1 6; do
+        ln -sf /etc/init.d/collectl /etc/rc.d/rc${i}.d/K01collectl
+   done
+fi
+
+%prerun
+#only on uninstall, not on upgrades.
+if [ $1 = 0 ]; then
+  /etc/init.d/collectl stop  > /dev/null 2>&1
+  if [ -x /usr/lib/lsb/remove_initd ]; then
+    /usr/lib/lsb/install_initd /etc/init.d/collectl
+  elif [ -x /sbin/chkconfig ]; then
+    /sbin/chkconfig --del collectl
+  else
+    rm -f /etc/rc.d/rc?.d/???collectl
+  fi
+fi

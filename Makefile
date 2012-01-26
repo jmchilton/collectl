@@ -38,4 +38,5 @@ rpms: build
 		--define '_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm' \
 		--define "_specdir %{_topdir}" \
 		--define "_sourcedir  %{_topdir}" \
+		--define "_for_os fedora" \
 		-ba msi-collectl.spec
