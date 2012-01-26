@@ -114,7 +114,7 @@ else
    done
 fi
 
-%prerun
+%preun
 #only on uninstall, not on upgrades.
 if [ $1 = 0 ]; then
   /etc/init.d/collectl stop  > /dev/null 2>&1
