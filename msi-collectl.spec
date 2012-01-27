@@ -9,7 +9,7 @@ Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 %if %{_for_os} == "fedora"
-Requires: dmidecode
+Requires: dmidecode pciutils perl-IO-Zlib
 %endif
 
 %description
@@ -90,13 +90,13 @@ install -m 755 initd/$INITFILE $INITDIR/collectl
 %elseif %{_for_os} == "suse"
 %attr(0755, root, root) /etc/init.d/collectl
 %endif
-%attr(0444, root, root) /etc/collectl.conf
+%attr(0644, root, root) /etc/collectl.conf
 %attr(0755, root, root) /usr/bin/collectl
-%attr(0444, root, root) /usr/share/doc/collectl/*
+%attr(0644, root, root) /usr/share/doc/collectl/*
 %attr(0755, root, root) /usr/share/collectl/util/client.pl
 %attr(0755, root, root) /usr/share/collectl/util/readS
 %attr(0755, root, root) /usr/share/collectl/util/col2tlviz.pl
-%attr(0444, root, root) /usr/share/collectl/*.ph
+%attr(0644, root, root) /usr/share/collectl/*.ph
 
 %pre
 
