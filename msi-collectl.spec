@@ -1,7 +1,7 @@
 Summary: MSI Collectl
 Name: msi-collectl
 Version: 3.6.0
-Release: 1
+Release: 3
 License: GPL
 Group: Applications/System
 URL: https://github.com/jmchilton/collectl
